@@ -86,6 +86,7 @@ docker-compose up
 ```
 ## Install kubernetes 
 Install kubectl, kubeadm, kubelet on each of the nodes.
+As root, do the following:
 ```
 # Setup repository
 cat >>/etc/yum.repos.d/kubernetes.repo<<EOF
