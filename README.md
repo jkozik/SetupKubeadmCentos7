@@ -185,6 +185,8 @@ kubeadm token create --print-join-command
 https://github.com/justmeandopensource/kubernetes/blob/master/docs/install-cluster-centos-7.md
 https://stackoverflow.com/questions/57648829/how-to-fix-timeout-at-waiting-for-the-kubelet-to-boot-up-the-control-plane-as-st
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+https://docs.projectcalico.org/networking/ip-autodetection
+
 
 # Youtube
 
