@@ -9,6 +9,7 @@ The setup for the kmaster and the kworker1/2 nodes are the same until the cluste
 
 Most of the steps below are common to all three nodes.
 
+## Setup kmaster, kworker1 and kworker2
 In root, on each node kmaster, kworker1, kworker2
 
 ```
@@ -68,6 +69,7 @@ groupadd docker
 usermod -aG docker jkozik
 chmod 666 /var/run/docker.sock
 ```
+## Verify docker
 Login as jkozik. Verify that docker, docker-compose and git all work
 
 ```
