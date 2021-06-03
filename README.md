@@ -46,14 +46,15 @@ net.bridge.bridge-nf-call-iptables = 1
 EOF
 sysctl --system
 ```
-
+## Install Docker
 Install git, docker, docker-compose.  Verify status and hello-world
 ```
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum install -y docker-ce git
 git --version
-systemctl restart docker && systemctl enable docker
+systemctl start docker 
+systemctl enable docker
 systemctl status docker
 ```
 Verify that docker works and then install docker compose
@@ -72,8 +73,97 @@ Login as jkozik. Verify that docker, docker-compose and git all work
 ```
 git --version
 docker run hello-world
-git clone https://github.com/jkozik/SetupCentOS7
+git clone https://github.com/jkozik/SetupKubeadmCentos7
 cd SetupKubeadmCentos7
 docker-compose up
 ```
+## Install kubernetes 
+Install kubectl, kubeadm, kubelet on each of the nodes.
+```
+# Setup repository
+cat >>/etc/yum.repos.d/kubernetes.repo<<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+yum install -y kubelet kubeadm kubectl
+# Enable and start kubelet
+systemctl enable --now kubelet
+```
+# For kmaster only
+We've installed the same kubernetes software on three VMs -- now three nodes.  We now need to create a cluster.  Using the root prompt on the kmaster node, we need to initialize the cluster and create a network.
+# Initialize the cluster
+```
+kubeadm init --apiserver-advertise-address=192.168.100.172 --pod-network-cidr=10.68.0.0/16
+```
+The output of this command will look like this.  This needs to be kept in order to join the other nodes in the cluster.
+```
+Your Kubernetes control-plane has initialized successfully!
 
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.100.172:6443 --token 144c60.uv1po0x8xyflt055 \
+        --discovery-token-ca-cert-hash sha256:72d91cedae66331277fada882c172b027974085388c1c084682bcc7821fcf60d
+```
+It is useful to run the following commands to give the status of the cluster.  We will re-run these commands as the cluster gets built out.
+```
+kubectl get nodes
+kubectl get pods --all-namespaces
+```
+## install networking
+The kubernetes architecture permits many different networking tools.  I am using Calico.  The steps to install Calico involve getting a yml file, editing for our ip address range and applying it.
+```
+curl https://docs.projectcalico.org/manifests/calico.yaml -O
+vi calico.yaml  #uncomment the lines and set the CIDR to the one we used in the kubeadm init command
+            #- name: CALICO_IPV4POOL_CIDR
+            #  value: "10.68.0.0/16"
+ export KUBECONFIG=/etc/kubernetes/admin.conf
+ kubectl apply -f calico.yaml
+ ```
+ Again, run the two status commands.  For me, I get the following:
+ ```
+[root@kmaster ~]# kubectl get nodes
+NAME      STATUS   ROLES                  AGE   VERSION
+kmaster   Ready    control-plane,master   16h   v1.21.1
+[root@kmaster ~]# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-78d6f96c7b-kxhtv   1/1     Running   0          14h
+kube-system   calico-node-gvdxk                          1/1     Running   0          14h
+kube-system   coredns-558bd4d5db-dtdzd                   1/1     Running   0          16h
+kube-system   coredns-558bd4d5db-rmfhz                   1/1     Running   0          16h
+kube-system   etcd-kmaster                               1/1     Running   0          16h
+kube-system   kube-apiserver-kmaster                     1/1     Running   0          16h
+kube-system   kube-controller-manager-kmaster            1/1     Running   0          16h
+kube-system   kube-proxy-lg5qd                           1/1     Running   0          16h
+kube-system   kube-scheduler-kmaster                     1/1     Running   0          16h
+```
+Following the output of the kubeadm command, setup kubernetes in a non-root login.
+Logged in as jkozik
+```
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+Also, if needed, a new join command can be generated with the following:
+```
+kubeadm token create --print-join-command
+```
