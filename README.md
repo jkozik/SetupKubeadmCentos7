@@ -97,9 +97,9 @@ yum install -y kubelet kubeadm kubectl
 # Enable and start kubelet
 systemctl enable --now kubelet
 ```
-# For kmaster only
+### For kmaster only
 We've installed the same kubernetes software on three VMs -- now three nodes.  We now need to create a cluster.  Using the root prompt on the kmaster node, we need to initialize the cluster and create a network.
-# Initialize the cluster
+### Initialize the cluster
 ```
 kubeadm init --apiserver-advertise-address=192.168.100.172 --pod-network-cidr=10.68.0.0/16
 ```
@@ -131,7 +131,7 @@ It is useful to run the following commands to give the status of the cluster.  W
 kubectl get nodes
 kubectl get pods --all-namespaces
 ```
-## install networking
+### install networking
 The kubernetes architecture permits many different networking tools.  I am using Calico.  The steps to install Calico involve getting a yml file, editing for our ip address range and applying it.
 ```
 curl https://docs.projectcalico.org/manifests/calico.yaml -O
@@ -141,6 +141,7 @@ vi calico.yaml  #uncomment the lines and set the CIDR to the one we used in the 
  export KUBECONFIG=/etc/kubernetes/admin.conf
  kubectl apply -f calico.yaml
  ```
+ ### Verify kmaster setup
  Again, run the two status commands.  For me, I get the following:
  ```
 [root@kmaster ~]# kubectl get nodes
