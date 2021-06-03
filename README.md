@@ -36,6 +36,10 @@ Continuing as root, disable firewall, SElinux, swap. Set bridging for kubernetes
 ```
 #firewall
 systemctl disable firewalld; systemctl stop firewalld
+
+#Swap
+swapoff -a; sed -i '/swap/d' /etc/fstab
+
 #SELinux
 setenforce 0
 sed -i --follow-symlinks 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
@@ -44,6 +48,7 @@ cat >>/etc/sysctl.d/kubernetes.conf<<EOF
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
+
 sysctl --system
 ```
 ## Install Docker
