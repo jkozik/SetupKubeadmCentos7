@@ -23,13 +23,12 @@ vi /etc/hosts  # Add "kmaster/kworker1/kworker2" at the end of each line
 ```
 Add user. I usually add this user as part of the Centos7 installation.
 ```
-# adduser jkozik
-# passwd jkozik
-# cd /root/.ssh
-# mkdir -p /home/jkozik/.ssh && chmod 700 /home/jkozik/.ssh
-# cp authorized_keys /home/jkozik/.ssh && chmod 600 authorized_keys
-# chown -R jkozik:jkozik /home/jkozik/.ssh
-# gpasswd -a jkozik wheel
+adduser jkozik
+passwd jkozik
+cd /root/.ssh
+mkdir -p /home/jkozik/.ssh && chmod 700 /home/jkozik/.ssh
+touch authorized_keys && chmod 600 authorized_keys
+gpasswd -a jkozik wheel
 ```
 Now verify that one can login using ssh to user jkozik.  Verify sudo works. 
 
