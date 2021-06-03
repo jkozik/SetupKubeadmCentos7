@@ -1,4 +1,4 @@
-# SetupKubeadmCentos7
+# Setup kubeadm on Centos7
 To setup Kubernetes on my home server, I need to create 3 nodes.  A master and two workers.  There are several procedures for getting this working (referenced below).  It turns out I had to look at several of them to finally get things working, so therefore, I am writing this note to help me keep things straight.
 
 I am using VirtualBox and creating 3 VMs all based on the Centos7 minumum iso.  I install them from scratch to a static IP addresses on my home LAN (192.168.100.0/24). These VMs are setup with a bridged interface and can ping anything in my home LAN or Internet.  
@@ -31,6 +31,21 @@ Add user. I usually add this user as part of the Centos7 installation.
 # gpasswd -a jkozik wheel
 ```
 Now verify that one can login using ssh to user jkozik.  Verify sudo works. 
+
+Continuing as root, disable firewall, SElinux, swap. Set bridging for kubernetes
+```
+#firewall
+systemctl disable firewalld; systemctl stop firewalld
+#SELinux
+setenforce 0
+sed -i --follow-symlinks 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+#Bridging
+cat >>/etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+```
 
 Install git, docker, docker-compose.  Verify status and hello-world
 ```
