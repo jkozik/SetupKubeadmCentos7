@@ -147,6 +147,10 @@ vi calico.yaml  #uncomment the lines and set the CIDR to the one we used in the 
  export KUBECONFIG=/etc/kubernetes/admin.conf
  kubectl apply -f calico.yaml
  ```
+ I found that calico did not come up.  The pod for the worker1 was stuck in a CrashLoopBackOff mode.  The logs for that pod indicted that "Calico node 'k8s-node-1' is already using the IPv4 address" -- meaning I don't know what.  I found a useful help note that said to run this command:
+ ```
+kubectl set env daemonset/calico-node -n kube-system IP_AUTODETECTION_METHOD=can-reach=www.google.com
+ ```
  ### Verify kmaster setup
  Again, run the two status commands.  For me, I get the following:
  ```
