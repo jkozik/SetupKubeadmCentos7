@@ -167,3 +167,27 @@ Also, if needed, a new join command can be generated with the following:
 ```
 kubeadm token create --print-join-command
 ```
+#References
+https://github.com/justmeandopensource/kubernetes/blob/master/docs/install-cluster-centos-7.md
+https://stackoverflow.com/questions/57648829/how-to-fix-timeout-at-waiting-for-the-kubelet-to-boot-up-the-control-plane-as-st
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+#Youtube
+Tech Tutorials
+https://www.youtube.com/watch?v=gmUWZippIJE
+Kubernetes (1.12.2) Installation On Centos7
+https://www.youtube.com/watch?v=MgXh2HpNBtk
+Install Kubernetes | Setup Kubernetes Step by Step | Kubernetes Training | Intellipaat
+https://www.youtube.com/watch?v=l7gC4SgW7DU
+Install kubeadm
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+Overview: Installing Kubernetes using Kubeadm | Coupon: UDEMYNOV20 | Udemy: Kubernetes Made Easy
+https://www.youtube.com/watch?v=fT89wBxT1pI
+Demo: Installing Kubernetes Using Kubeadm | Coupon: UDEMYNOV20 | Udemy: Kubernetes Made Easy
+https://www.youtube.com/watch?v=lOd-0_DpYG8
+Pods in Kubernetes | Coupon: UDEMYNOV20 | Udemy: Kubernetes Made Easy | Kubernetes Tutorial
+https://www.youtube.com/watch?v=MgXh2HpNBtk
+ Kube 1 ] Setup Kubernetes Cluster using Kubeadm on CentOS 7
+https://www.youtube.com/watch?v=Araf8JYQn3w
+
+
