@@ -210,6 +210,7 @@ Install and Set Up kubectl on Linux
 https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
 ```
 From the kmaster user login, here's what my cluster looks like:
+```
 [jkozik@kmaster .kube]$ kubectl get pods --all-namespaces -o wide
 NAMESPACE              NAME                                         READY   STATUS    RESTARTS   AGE     IP                NODE       NOMINATED NODE   READINESS GATES
 kube-system            calico-kube-controllers-78d6f96c7b-kxhtv     1/1     Running   0          2d20h   10.68.189.3       kmaster    <none>           <none>
