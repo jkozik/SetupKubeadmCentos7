@@ -180,6 +180,72 @@ Also, if needed, a new join command can be generated with the following:
 ```
 kubeadm token create --print-join-command
 ```
+### kworker1, kworker2
+Just above we installed kubernetes on three VMs (nodes).  These nodes are all the same, until we made kmaster a master node but running the kubeadm init command.  As the master, it generated a join command that should be run on the worker nodes.  For kworker1 and kworker2, run the following command in root:
+```
+kubeadm join 192.168.100.172:6443 --token 144c60.uv1po0x8xyflt055 \
+        --discovery-token-ca-cert-hash sha256:72d91cedae66331277fada882c172b027974085388c1c084682bcc7821fcf60d
+```
+Note, the key above will be different for each cluster setup and the key expires.  The output of the join looks like this:
+```
+[root@kworker2 ~]# kubeadm join 192.168.100.172:6443 --token 64mehc.f7fenvufpno5l5ql --discovery-token-ca-cert-hash sha256:72d91cedae66331277fada882c172b027974085388c1c084682bcc7821fcf60d
+[preflight] Running pre-flight checks
+        [WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+```
+Note that for the worker nodes, you never really need to access them directly, so there's no need to setup kubectl.  Kubectl is run from either a the master node, kmaster, or one can set it on a host outside of the cluster. I followed these instructions to setup kubectl on host that runs my VirtualBox -- outside of the kmaster node. 
+```
+Install and Set Up kubectl on Linux
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+```
+From the kmaster user login, here's what my cluster looks like:
+[jkozik@kmaster .kube]$ kubectl get pods --all-namespaces -o wide
+NAMESPACE              NAME                                         READY   STATUS    RESTARTS   AGE     IP                NODE       NOMINATED NODE   READINESS GATES
+kube-system            calico-kube-controllers-78d6f96c7b-kxhtv     1/1     Running   0          2d20h   10.68.189.3       kmaster    <none>           <none>
+kube-system            calico-node-6x85w                            1/1     Running   0          2d1h    192.168.100.173   kworker1   <none>           <none>
+kube-system            calico-node-ch2bs                            1/1     Running   0          2d1h    192.168.100.172   kmaster    <none>           <none>
+kube-system            calico-node-zdmmt                            1/1     Running   0          26h     192.168.100.174   kworker2   <none>           <none>
+kube-system            coredns-558bd4d5db-dtdzd                     1/1     Running   0          2d22h   10.68.189.2       kmaster    <none>           <none>
+kube-system            coredns-558bd4d5db-rmfhz                     1/1     Running   0          2d22h   10.68.189.1       kmaster    <none>           <none>
+kube-system            etcd-kmaster                                 1/1     Running   0          2d22h   192.168.100.172   kmaster    <none>           <none>
+kube-system            kube-apiserver-kmaster                       1/1     Running   0          2d22h   192.168.100.172   kmaster    <none>           <none>
+kube-system            kube-controller-manager-kmaster              1/1     Running   0          2d22h   192.168.100.172   kmaster    <none>           <none>
+kube-system            kube-proxy-2j6s7                             1/1     Running   0          26h     192.168.100.174   kworker2   <none>           <none>
+kube-system            kube-proxy-lg5qd                             1/1     Running   0          2d22h   192.168.100.172   kmaster    <none>           <none>
+kube-system            kube-proxy-xm4pt                             1/1     Running   0          2d3h    192.168.100.173   kworker1   <none>           <none>
+kube-system            kube-scheduler-kmaster                       1/1     Running   0          2d22h   192.168.100.172   kmaster    <none>           <none>
+[jkozik@kmaster .kube]$ kubectl get nodes
+NAME       STATUS   ROLES                  AGE     VERSION
+kmaster    Ready    control-plane,master   2d22h   v1.21.1
+kworker1   Ready    <none>                 2d3h    v1.21.1
+kworker2   Ready    <none>                 26h     v1.21.1
+[jkozik@kmaster .kube]$
+```
+## Dashboard
+As sort of a test to see if everything is running, I setup the Dashboard service.  The dashboard has gone through a couple of evolutionary steps and the setup process was challenging for me.  I found the following resource helpful
+```
+Kubernetes Dashboard: Easiest way to deploy and access in 3 simple steps
+https://www.youtube.com/watch?v=bpZzV4GPLks
+https://github.com/irsols-devops/kubernetes-dashboard
+Kubernetes official Dashboard pages
+https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/README.md
+https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+```
+The administrative access control is very strict and picky to setup. Further, the dashboard service is by default a ClusterIP setup, making it very hard to access from a browser on another PC.  The tips above showed how to change the service to a NodePort one and gave a script that generated the access control token.  
+
+Once working, the dashboard application is sort of a Hello World test of the cluster setup
+
 # References
 
 https://github.com/justmeandopensource/kubernetes/blob/master/docs/install-cluster-centos-7.md
