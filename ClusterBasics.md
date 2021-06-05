@@ -30,6 +30,7 @@ kube-system            kube-scheduler-kmaster                       1/1     Runn
 kubernetes-dashboard   dashboard-metrics-scraper-856586f554-w8n2c   1/1     Running   0          2d2h    10.68.41.131      kworker1   <none>           <none>
 kubernetes-dashboard   kubernetes-dashboard-7795fd6d89-v98dn        1/1     Running   0          45h     10.68.41.132      kworker1   <none>           <none>
 ```
+## Deploy nginx, access it external through a service
 The most basic thing you can do is deploy something.  Here's an example of deploying nginx on a cluster
 ```
 [jkozik@kmaster ~]$ kubectl create deployment nginx --image=nginx
