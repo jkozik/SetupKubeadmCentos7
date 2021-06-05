@@ -239,9 +239,13 @@ As sort of a test to see if everything is running, I setup the Dashboard service
 Kubernetes Dashboard: Easiest way to deploy and access in 3 simple steps
 https://www.youtube.com/watch?v=bpZzV4GPLks
 https://github.com/irsols-devops/kubernetes-dashboard
+
 Kubernetes official Dashboard pages
 https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/README.md
 https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+How to deploy Kubernetes Dashboard quickly and easily
+https://upcloud.com/community/tutorials/deploy-kubernetes-dashboard/
 ```
 The administrative access control is very strict and picky to setup. Further, the dashboard service is by default a ClusterIP setup, making it very hard to access from a browser on another PC.  The tips above showed how to change the service to a NodePort one and gave a script that generated the access control token.  
 
