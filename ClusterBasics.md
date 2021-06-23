@@ -326,7 +326,11 @@ kubectl apply -f nginx-pv.yaml
 ```
 Verify that it works:
 ```
-kubectl get pv
+[jkozik@dell2 nginxtest]$ kubectl apply -f nginx-pv.yaml
+persistentvolume/nginx-persistent-storage created
+[jkozik@dell2 nginxtest]$ kubectl get pv nginx-persistent-storage
+NAME                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+nginx-persistent-storage   1Gi        RWX            Retain           Available
 ```
 Next apply the Persistent Volume claim
 ```
@@ -348,7 +352,11 @@ kubectl apply -f nginx-pvc.yaml
 ```
 Verify that the PVC works and is bound to the PV. 
 ```
-kubectl get pvc
+[jkozik@dell2 nginxtest]$ kubectl apply -f nginx-pvc.yaml
+persistentvolumeclaim/nginx-persistent-storage created
+[jkozik@dell2 nginxtest]$ kubectl get pvc nginx-persistent-storage
+NAME                       STATUS   VOLUME                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+nginx-persistent-storage   Bound    nginx-persistent-storage   1Gi        RWX
 ```
 
 
