@@ -261,4 +261,94 @@ https://gardener.cloud/documentation/guides/applications/service-access/
 
 Storage in Kubernetes is managed separately.  You want to be able to create/scale/delete pods without wrecking the data. Persistent Volumes are a peer resource that abstract the data from the actual storage.  An administrator creates PVs manually and the deployments use something called a Persistent Volume Claim to link the pods with the PV(s). In my particular case, I have choosen to mount my PVs on NFS shares.  There's lots of other choices, including using storage services from Amazon or Google. For me NFS is plenty simple and easy to manage.
 ### Setup NFS host and install NFS client software on worker nodes
-My persistent data is stored outside of the cluster on a Centos7 host.  
+My persistent data is stored outside of the cluster on a Centos7 host.  On this host's root login I did the following (brief summary)
+```
+yum install nfs-utils
+mkdir /var/nfsshare
+cd /var
+chmod -R 755 /var/nfsshare
+chown nfsnobody:nfsnobody /var/nfsshare
+systemctl enable rpcbind
+systemctl enable nfs-server
+systemctl enable nfs-lock
+systemctl enable nfs-idmap
+systemctl start rpcbind
+systemctl start nfs-server
+systemctl start nfs-lock
+systemctl start nfs-idmap
+```
+I created an exports file with the following content.
+```
+vi /etc/exports
+/var/nfsshare    192.168.100.0/24(rw,sync,no_root_squash,no_all_squash)
+```
+And then I finished the setup steps:
+```
+systemctl restart nfs-server
+firewall-cmd --permanent --zone=public --add-service=nfs
+firewall-cmd --permanent --zone=public --add-service=mountd
+firewall-cmd --permanent --zone=public --add-service=rpc-bind
+firewall-cmd --reload
+```
+My persistent volumes are directories created within the /var/nfsshare directory.  I created this following this guide https://www.howtoforge.com/nfs-server-and-client-on-centos-7
+
+### Setup NFS client on each of the worker nodes. 
+As part of setting PVs with NFS, the NFS client software needs to be installed on each of the worker nodes.  On the  nodes kworker1 and kworker2, I did the following steps, again following the reference above. 
+```
+yum install nfs-utils
+mkdir -p /mnt/nfs/var/nfsshare
+mount -t nfs 192.168.101.152:/var/nfsshare /mnt/nfs/var/nfsshare/
+```
+Not shown here, but it is good to verify the basic NFS client / server works. 
+
+### Setup Persistent Volume
+
+So for the same nginx deployment, we want to apply the following PV and PVC.
+```
+cat <<EOF >>nginx-pv.yaml 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-persistent-storage
+  labels:
+    app: nginx
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 192.168.101.152
+    # Exported path of your NFS server
+    path: "/var/nfsshare/nginxhtml"  # make sure this directory exists.
+EOF
+kubectl apply -f nginx-pv.yaml
+```
+Verify that it works:
+```
+kubectl get pv
+```
+Next apply the Persistent Volume claim
+```
+cat <<EOF >>nginx-pvc.yaml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-persistent-storage
+  labels:
+    app: nginx
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+kubectl apply -f nginx-pvc.yaml
+```
+Verify that the PVC works and is bound to the PV. 
+```
+kubectl get pvc
+```
+
+
