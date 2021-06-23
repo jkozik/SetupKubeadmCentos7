@@ -218,7 +218,8 @@ nginx-svc   NodePort   10.99.145.80   <none>        80:30779/TCP   4h    app=ngi
 [jkozik@dell2 nginxtest]$
 ```
 This sets up a barebones nginx and from a login on one of the worker nodes, one can access the default home page, as follows.
-```[root@kworker2 ~]# curl http://192.168.100.172:30779
+```
+[root@kworker2 ~]# curl http://192.168.100.172:30779
 <!DOCTYPE html>
 <html>
 <head>
@@ -244,6 +245,7 @@ Commercial support is available at
 <p><em>Thank you for using nginx.</em></p>
 </body>
 </html>
+
 [root@kworker2 ~]# curl 10.99.145.80
 <!DOCTYPE html>
 <html>
@@ -252,3 +254,11 @@ Commercial support is available at
 ```
 The first curl command is using one of the ip address of a node in the cluster.  Note: it requires the port number listed in the get services command.  The second curl command gives the exact same output, but it uses the IP address listed in the get services command.  One my home LAN any browser on that subnet can access that ipaddr/port and get the nginx home screen.  This is a really good test of the cluster.
 
+Reference
+https://gardener.cloud/documentation/guides/applications/service-access/
+
+## Volume Storage: NFS, PV, PVC
+
+Storage in Kubernetes is managed separately.  You want to be able to create/scale/delete pods without wrecking the data. Persistent Volumes are a peer resource that abstract the data from the actual storage.  An administrator creates PVs manually and the deployments use something called a Persistent Volume Claim to link the pods with the PV(s). In my particular case, I have choosen to mount my PVs on NFS shares.  There's lots of other choices, including using storage services from Amazon or Google. For me NFS is plenty simple and easy to manage.
+### Setup NFS host and install NFS client software on worker nodes
+My persistent data is stored outside of the cluster on a Centos7 host.  
