@@ -161,3 +161,94 @@ Commercial support is available at
 ```
 An http get to any of the ip addresses in the cluster to the port 31983 will return the default nginx welcome page.
 Not shown here, any browser on my home LAN can receive the same thing.
+## Deploy nginx using yaml files.
+Same idea as above, it is useful to verify that a cluster is working by installing nginx. It can be done by command line (see above), but better to use yaml manifest files.  Create the nginx.yaml file below and apply it. 
+```
+cat <<EOF >>nginx.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.13.12
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-app
+  name: nginx-svc
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+  selector:
+    app: nginx-app
+EOF
+kubectl apply -f nginx.yaml
+```
+This file creates an nginx pod using a deployment, then exposes that deployment in the form of a type of service called a NodePort.  Veryify that it is running ok.
+```
+[jkozik@dell2 nginxtest]$ kubectl get services -o wide nginx-svc
+NAME        TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE     SELECTOR
+nginx-svc   NodePort   10.99.145.80   <none>        80:30779/TCP   3h59m   app=nginx-app
+[jkozik@dell2 nginxtest]$ kubectl get deployments -o wide nginx-deployment
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES          SELECTOR
+nginx-deployment   1/1     1            1           3h14m   nginx        nginx:1.13.12   app=nginx-app
+[jkozik@dell2 nginxtest]$ kubectl get pods -o wide nginx-deployment-545f9867cf-k8r4t
+NAME                                READY   STATUS    RESTARTS   AGE     IP             NODE   
+nginx-deployment-545f9867cf-k8r4t   1/1     Running   0          3h15m   10.68.41.139   kworker1  
+[jkozik@dell2 nginxtest]$ kubectl get services -o wide nginx-svc
+NAME        TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+nginx-svc   NodePort   10.99.145.80   <none>        80:30779/TCP   4h    app=nginx-app
+[jkozik@dell2 nginxtest]$
+```
+This sets up a barebones nginx and from a login on one of the worker nodes, one can access the default home page, as follows.
+```[root@kworker2 ~]# curl http://192.168.100.172:30779
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+[root@kworker2 ~]# curl 10.99.145.80
+<!DOCTYPE html>
+<html>
+<head>
+...
+```
+The first curl command is using one of the ip address of a node in the cluster.  Note: it requires the port number listed in the get services command.  The second curl command gives the exact same output, but it uses the IP address listed in the get services command.  One my home LAN any browser on that subnet can access that ipaddr/port and get the nginx home screen.  This is a really good test of the cluster.
+
