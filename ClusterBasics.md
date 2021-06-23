@@ -35,9 +35,11 @@ The most basic thing you can do is deploy something.  Here's an example of deplo
 ```
 [jkozik@kmaster ~]$ kubectl create deployment nginx --image=nginx
 deployment.apps/nginx created
+
 [jkozik@kmaster ~]$ kubectl get deployments
 NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
 nginx                 1/1     1            1           15s
+
 [jkozik@kmaster ~]$ kubectl describe deployment nginx
 Name:                   nginx
 Namespace:              default
@@ -72,6 +74,7 @@ Events:
   Normal  ScalingReplicaSet  30s   deployment-controller  Scaled up replica set nginx-6799fc88d8 to 1
 [jkozik@kmaster ~]$ kubectl create service nodeport nginx --tcp=80:80
 service/nginx created
+
 [jkozik@kmaster ~]$ kubectl get service
 NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP        3d
@@ -206,12 +209,15 @@ This file creates an nginx pod using a deployment, then exposes that deployment 
 [jkozik@dell2 nginxtest]$ kubectl get services -o wide nginx-svc
 NAME        TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE     SELECTOR
 nginx-svc   NodePort   10.99.145.80   <none>        80:30779/TCP   3h59m   app=nginx-app
+
 [jkozik@dell2 nginxtest]$ kubectl get deployments -o wide nginx-deployment
 NAME               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES          SELECTOR
 nginx-deployment   1/1     1            1           3h14m   nginx        nginx:1.13.12   app=nginx-app
+
 [jkozik@dell2 nginxtest]$ kubectl get pods -o wide nginx-deployment-545f9867cf-k8r4t
 NAME                                READY   STATUS    RESTARTS   AGE     IP             NODE   
 nginx-deployment-545f9867cf-k8r4t   1/1     Running   0          3h15m   10.68.41.139   kworker1  
+
 [jkozik@dell2 nginxtest]$ kubectl get services -o wide nginx-svc
 NAME        TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE   SELECTOR
 nginx-svc   NodePort   10.99.145.80   <none>        80:30779/TCP   4h    app=nginx-app
@@ -328,6 +334,7 @@ Verify that it works:
 ```
 [jkozik@dell2 nginxtest]$ kubectl apply -f nginx-pv.yaml
 persistentvolume/nginx-persistent-storage created
+
 [jkozik@dell2 nginxtest]$ kubectl get pv nginx-persistent-storage
 NAME                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
 nginx-persistent-storage   1Gi        RWX            Retain           Available
@@ -354,9 +361,67 @@ Verify that the PVC works and is bound to the PV.
 ```
 [jkozik@dell2 nginxtest]$ kubectl apply -f nginx-pvc.yaml
 persistentvolumeclaim/nginx-persistent-storage created
+
 [jkozik@dell2 nginxtest]$ kubectl get pvc nginx-persistent-storage
 NAME                       STATUS   VOLUME                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 nginx-persistent-storage   Bound    nginx-persistent-storage   1Gi        RWX
 ```
+And finally, we need to add the volumeMounts to the original deployment yaml file.  Easier to recreate a new one here:
+```
+cat <<EOF >>nginx-mountpoint.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      volumes:
+        - name: nginx-pv-storage
+          persistentVolumeClaim:
+            claimName: nginx-persistent-storage
+      containers:
+      - name: nginx
+        image: nginx:1.13.12
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: nginx-pv-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-app
+  name: nginx-svc
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+  selector:
+    app: nginx-app
+EOF
+kubectl apply -f nginx-mountpoint.yaml
+```
+I put a simple test file in the NFS share:
+```
+echo "Hello, NFS Storage NGINX" > /var/nfsshare/nginxhtml/index.html
+```
+And on one of the worker nodes, I ran the following command to verify the PV, PVC and NFS worked.
+```
+[root@kworker2 ~]# curl http://192.168.100.172:30779
+Hello, NFS Storage NGINX
 
-
+[root@kworker2 ~]# curl 10.99.145.80
+Hello, NFS Storage NGINX
+```
+Note: the port number hasn't changed because we never changed the service.  Something to test.  Delete the deployment and re-create it.  The storage is outside of the node and should be preserved. 
