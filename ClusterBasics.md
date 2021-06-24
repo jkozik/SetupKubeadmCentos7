@@ -426,5 +426,5 @@ Hello, NFS Storage NGINX
 ```
 Note: the port number hasn't changed because we never changed the service.  Something to test.  Delete the deployment and re-create it.  The storage is outside of the node and should be preserved. 
 References for these last few steps came from:
-https://gardener.cloud/documentation/guides/applications/service-access/
-https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
+- https://gardener.cloud/documentation/guides/applications/service-access/
+- https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/
