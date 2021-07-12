@@ -1,6 +1,6 @@
 # Kubernetes Metrics Server
 
-A useful tool to deploy on the master node is the [metrics-server](https://github.com/kubernetes-sigs/metrics-server). It scans the nodes and the pods in a cluster and generates useful metrics.  The results can be seen on the command line or the dashboard.
+A useful tool to deploy on the master node is the [metrics-server](https://github.com/kubernetes-sigs/metrics-server). It scans the nodes and the pods in a cluster and generates useful metrics.  The results can be seen on the command line or the dashboard. The key new commands enabled are kubectl top nodes and Kubectl top pods. See below for example output. 
 ## Get deployment manifest
 From a login on the master node get the metrics server deployment yaml file 
 ```
