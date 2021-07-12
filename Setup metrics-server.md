@@ -97,4 +97,9 @@ wordpress-mysql-66cb796566-bbqdg       1m           459Mi
 
 Note:  after I applied the metrics server yaml file, it took a few minutes before the pod was ready and the log files were clean.  Also, these same metrics display graphically on the kubernetes dashboard.  Worth it.
 
-This is useful for me because I am trying to keep my cluster size small and I want to monitor how big my pods are getting.  
+This is useful for me because I am trying to keep my cluster size small and I want to monitor how big my pods are getting.
+
+## References
+- https://www.youtube.com/watch?v=unhB90kwc4Q
+- https://www.youtube.com/watch?v=PEs2ccoZ3ow
+- https://github.com/kubernetes-sigs/metrics-server
