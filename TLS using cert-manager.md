@@ -51,6 +51,82 @@ issuer.cert-manager.io/test-selfsigned created
 certificate.cert-manager.io/selfsigned-cert created
 
 ```
+Check the results and then remove the test.
+```
+[jkozik@dell2 k8sNw.com]$ kubectl describe certificate -n cert-
+Name:         selfsigned-cert
+Namespace:    cert-manager-test
+Labels:       <none>
+Annotations:  API Version:  cert-manager.io/v1
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2021-07-20T16:59:55Z
+  Generation:          1
+  Managed Fields:
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:dnsNames:
+        f:issuerRef:
+          .:
+          f:name:
+        f:secretName:
+    Manager:      kubectl
+    Operation:    Update
+    Time:         2021-07-20T16:59:55Z
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:notAfter:
+        f:notBefore:
+        f:renewalTime:
+        f:revision:
+    Manager:         controller
+    Operation:       Update
+    Time:            2021-07-20T16:59:56Z
+  Resource Version:  6033944
+  UID:               90355574-fada-4ea5-90cc-6df10fc33af1
+Spec:
+  Dns Names:
+    example.com
+  Issuer Ref:
+    Name:       test-selfsigned
+  Secret Name:  selfsigned-cert-tls
+Status:
+  Conditions:
+    Last Transition Time:  2021-07-20T17:00:01Z
+    Message:               Certificate is up to date and has no
+    Observed Generation:   1
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2021-10-18T17:00:01Z
+  Not Before:              2021-07-20T17:00:01Z
+  Renewal Time:            2021-09-18T17:00:01Z
+  Revision:                1
+Events:
+  Type    Reason     Age   From          Message
+  ----    ------     ----  ----          -------
+  Normal  Issuing    38s   cert-manager  Issuing certificate as
+  Normal  Generated  37s   cert-manager  Stored new private key
+  Normal  Requested  37s   cert-manager  Created new Certificat
+  Normal  Issuing    37s   cert-manager  The certificate has be
+[jkozik@dell2 k8sNw.com]$  kubectl delete -f test-resources.yam
+namespace "cert-manager-test" deleted
+issuer.cert-manager.io "test-selfsigned" deleted
+certificate.cert-manager.io "selfsigned-cert" deleted
+```
+
+
 # References
 - https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes
