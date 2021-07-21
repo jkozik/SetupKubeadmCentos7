@@ -293,6 +293,10 @@ napervilleweather-com-tls   False   napervilleweather-com-tls   17m
 NAME                        READY   SECRET                      AGE
 napervilleweather-com-tls   True    napervilleweather-com-tls   17m
 
+[jkozik@dell2 k8sNw.com]$ kubectl get secret napervilleweather-com-tls
+NAME                        TYPE                DATA   AGE
+napervilleweather-com-tls   kubernetes.io/tls   2      25h
+
 [jkozik@dell2 k8sNw.com]$ kubectl describe   certificate napervilleweather-com-tls
 Name:         napervilleweather-com-tls
 Namespace:    default
