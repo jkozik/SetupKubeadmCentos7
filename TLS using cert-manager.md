@@ -230,7 +230,207 @@ spec:
             port:
               number: 80
 ```
-This file has been working just fine for http. Following the example in the cert-manager [Securing Ingress Resources}(https://cert-manager.io/docs/usage/ingress/) documentation, 
+This file has been working just fine for http. Following the example in the cert-manager [Securing Ingress Resources](https://cert-manager.io/docs/usage/ingress/) documentation, I added an annotation and a tls section to the yaml file, as follows"
+```
+[jkozik@dell2 k8sNw.com]$ cat nwcom-ingress-tls.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nwcom-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - napervilleweather.com
+    secretName: napervilleweather-com-tls
+  rules:
+  - host: napervilleweather.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nwcom
+            port:
+              number: 80
+```
+Cert-manager will see the annotation and use data from the referenced ClusterIssuer (letsencrypt-prod, in my case) to go LetEncrypt to create certificate and store it in the referenced secret. This happens the first time a new URL is referenced.  After that the secret is used. 
+```
+[jkozik@dell2 k8sNw.com]$ kubectl apply -f nwcom-ingress-tls.yml
+ingress.networking.k8s.io/nwcom-ingress configured
+
+[jkozik@dell2 k8sNw.com]$ kubectl get ingress
+NAME                      CLASS    HOSTS                     ADDRESS           PORTS     AGE
+nwcom-ingress             <none>   napervilleweather.com     192.168.100.174   80, 443   3d
+
+[jkozik@dell2 k8sNw.com]$ kubectl describe ingress nwcom-ingress
+Name:             nwcom-ingress
+Namespace:        default
+Address:          192.168.100.174
+Default backend:  default-http-backend:80 (<error: endpoints "default-http-backend" not found>)
+TLS:
+  napervilleweather-com-tls terminates napervilleweather.com
+Rules:
+  Host                   Path  Backends
+  ----                   ----  --------
+  napervilleweather.com
+                         /   nwcom:80 (10.68.77.157:80)
+Annotations:             cert-manager.io/cluster-issuer: letsencrypt-staging
+                         nginx.ingress.kubernetes.io/rewrite-target: /
+Events:
+  Type    Reason             Age                   From                      Message
+  ----    ------             ----                  ----                      -------
+  Normal  CreateCertificate  2m31s                 cert-manager              Successfully created Certificate "napervilleweather-com-tls"
+  Normal  Sync               2m18s (x3 over 2d1h)  nginx-ingress-controller  Scheduled for sync
+
+[jkozik@dell2 k8sNw.com]$ kubectl get  certificate
+NAME                        READY   SECRET                      AGE
+napervilleweather-com-tls   False   napervilleweather-com-tls   17m
+[jkozik@dell2 k8sNw.com]$ kubectl get  certificate
+NAME                        READY   SECRET                      AGE
+napervilleweather-com-tls   True    napervilleweather-com-tls   17m
+
+[jkozik@dell2 k8sNw.com]$ kubectl describe   certificate napervilleweather-com-tls
+Name:         napervilleweather-com-tls
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+API Version:  cert-manager.io/v1
+Kind:         Certificate
+Metadata:
+  Creation Timestamp:  2021-07-20T17:41:36Z
+  Generation:          2
+  Managed Fields:
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:ownerReferences:
+          .:
+          k:{"uid":"f875b374-8790-491a-b3e6-d0f4f85308d2"}:
+            .:
+            f:apiVersion:
+            f:blockOwnerDeletion:
+            f:controller:
+            f:kind:
+            f:name:
+            f:uid:
+      f:spec:
+        .:
+        f:dnsNames:
+        f:issuerRef:
+          .:
+          f:group:
+          f:kind:
+          f:name:
+        f:secretName:
+        f:usages:
+      f:status:
+        .:
+        f:conditions:
+        f:notAfter:
+        f:notBefore:
+        f:renewalTime:
+        f:revision:
+    Manager:    controller
+    Operation:  Update
+    Time:       2021-07-20T17:58:24Z
+  Owner References:
+    API Version:           networking.k8s.io/v1beta1
+    Block Owner Deletion:  true
+    Controller:            true
+    Kind:                  Ingress
+    Name:                  nwcom-ingress
+    UID:                   f875b374-8790-491a-b3e6-d0f4f85308d2
+  Resource Version:        6043513
+  UID:                     61891b3c-5247-4a9d-9ffd-4873e007596d
+Spec:
+  Dns Names:
+    napervilleweather.com
+  Issuer Ref:
+    Group:      cert-manager.io
+    Kind:       ClusterIssuer
+    Name:       letsencrypt-prod
+  Secret Name:  napervilleweather-com-tls
+  Usages:
+    digital signature
+    key encipherment
+Status:
+  Conditions:
+    Last Transition Time:  2021-07-20T17:58:58Z
+    Message:               Certificate is up to date and has not expired
+    Observed Generation:   2
+    Reason:                Ready
+    Status:                True
+    Type:                  Ready
+  Not After:               2021-10-18T16:59:12Z
+  Not Before:              2021-07-20T16:59:14Z
+  Renewal Time:            2021-09-18T16:59:12Z
+  Revision:                2
+Events:
+  Type    Reason     Age                From          Message
+  ----    ------     ----               ----          -------
+  Normal  Issuing    18m                cert-manager  Issuing certificate as Secret does not exist
+  Normal  Generated  18m                cert-manager  Stored new private key in temporary Secret resource "napervilleweather-com-tls-xg6kh"
+  Normal  Requested  18m                cert-manager  Created new CertificateRequest resource "napervilleweather-com-tls-mqnp7"
+  Normal  Issuing    74s                cert-manager  Issuing certificate as Secret was previously issued by ClusterIssuer.cert-manager.io/letsencrypt-staging
+  Normal  Reused     74s                cert-manager  Reusing private key stored in existing Secret resource "napervilleweather-com-tls"
+  Normal  Requested  74s                cert-manager  Created new CertificateRequest resource "napervilleweather-com-tls-ms4cm"
+  Normal  Issuing    45s (x2 over 17m)  cert-manager  The certificate has been successfully issued
+  
+[jkozik@dell2 k8sNw.com]$ kubectl describe ingress nwcom-ingress
+Name:             nwcom-ingress
+Namespace:        default
+Address:          192.168.100.174
+Default backend:  default-http-backend:80 (<error: endpoints "default-http-backend" not found>)
+TLS:
+  napervilleweather-com-tls terminates napervilleweather.com
+Rules:
+  Host                   Path  Backends
+  ----                   ----  --------
+  napervilleweather.com
+                         /   nwcom:80 (10.68.77.157:80)
+Annotations:             cert-manager.io/cluster-issuer: letsencrypt-prod
+                         nginx.ingress.kubernetes.io/rewrite-target: /
+Events:
+  Type    Reason             Age                 From                      Message
+  ----    ------             ----                ----                      -------
+  Normal  CreateCertificate  29m                 cert-manager              Successfully created Certificate "napervilleweather-com-tls"
+  Normal  UpdateCertificate  12m                 cert-manager              Successfully updated Certificate "napervilleweather-com-tls"
+  Normal  Sync               88s (x6 over 2d2h)  nginx-ingress-controller  Scheduled for sync
+  
+```
+# Verify basic plumbing
+As the command below show, the napervilleweather.com ingress's IP address is 192.168.100.174; the ingress controller exposes the cluster to the outside world on ports 80:30140 and 443:30023.  To test basic wiring, curl that IP address with port 30023 to verify things work.  It is difficult to check the certificates using curl, so use the -k option.
+```
+[jkozik@dell2 k8sNw.com]$ kubectl get ingress  nwcom-ingress
+NAME            CLASS    HOSTS                   ADDRESS           PORTS     AGE
+nwcom-ingress   <none>   napervilleweather.com   192.168.100.174   80, 443   4d1h
+
+[jkozik@dell2 k8sNw.com]$ kubectl -n ingress-nginx get services
+NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.97.70.29     <none>        80:30140/TCP,443:30023/TCP   26d
+ingress-nginx-controller-admission   ClusterIP   10.111.250.10   <none>        443/TCP                      26d
+
+[jkozik@dell2 k8sNw.com]$ curl -k -H "Host: napervilleweather.com" https://192.168.100.174:30023 | head
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <!-- ##### start AJAX mods ##### -->
+    <script type="text/javascript" src="ajaxCUwx.js"></script>
+    <!-- AJAX updates by Ken True - http://saratoga-weather.org/wxtemplates/ -->
+    <script type="text/javascript" src="ajaxgizmo.js"></script>
+    <script type="text/javascript" src="language-en.js"></script>
+        <!-- language for AJAX script included -->
+100  7802    0  7802    0     0  58268      0 --:--:-- --:--:-- --:--:-- 58661
+```
+
 
 # References
 - https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation
