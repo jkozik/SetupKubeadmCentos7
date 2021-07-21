@@ -1,0 +1,17 @@
+# SSL Certificates. Get them from Let's Encrypt using Cert-Manager
+My cluster has websites that need to be accessed through https. Kubernetes has an add-on called Cert-Manager that sets up TLS certificates using the automated process defined by [Let's Encrypt](https://letsencrypt.org/). 
+
+After my cluster was setup and I got some applications working using the nginx ingress controller for http (port 80), I added cert-manager and then updated my ingress files to  add tls support.
+
+From my kubectl login for my cluster, I installed cert-manager and verified that its pods were created:
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.yaml
+
+[jkozik@dell2 k8sNw.com]$ kubectl get pods --namespace cert-manager
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-5d7f97b46d-gszqm              1/1     Running   4          24h
+cert-manager-cainjector-69d885bf55-l6b7j   1/1     Running   7          24h
+cert-manager-webhook-54754dcdfd-ncdw6      1/1     Running   0          24h
+```
+Note: on my cluster, this took a long time.  I thought the apply was being ignored.  But eventually it worked.  Maybe I need more resources for my cluster?!
+
