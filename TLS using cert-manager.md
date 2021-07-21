@@ -257,7 +257,7 @@ spec:
             port:
               number: 80
 ```
-Cert-manager will see the annotation and use data from the referenced ClusterIssuer (letsencrypt-prod, in my case) to go LetEncrypt to create certificate and store it in the referenced secret. This happens the first time a new URL is referenced.  After that the secret is used. 
+Cert-manager will see the annotation and use data from the referenced ClusterIssuer (letsencrypt-prod, in my case) will create an order to go to LetEncrypt to create certificate and store it in the referenced secret. This happens the first time a new URL is referenced.  After that the secret is used. 
 ```
 [jkozik@dell2 k8sNw.com]$ kubectl apply -f nwcom-ingress-tls.yml
 ingress.networking.k8s.io/nwcom-ingress configured
@@ -292,6 +292,11 @@ napervilleweather-com-tls   False   napervilleweather-com-tls   17m
 [jkozik@dell2 k8sNw.com]$ kubectl get  certificate
 NAME                        READY   SECRET                      AGE
 napervilleweather-com-tls   True    napervilleweather-com-tls   17m
+
+[jkozik@dell2 k8sNw.com]$   kubectl get orders --all-namespaces
+NAMESPACE   NAME                                         STATE   AGE
+default     napervilleweather-com-tls-mqnp7-3452180607   valid   26h
+default     napervilleweather-com-tls-ms4cm-3688419087   valid   25h
 
 [jkozik@dell2 k8sNw.com]$ kubectl get secret napervilleweather-com-tls
 NAME                        TYPE                DATA   AGE
