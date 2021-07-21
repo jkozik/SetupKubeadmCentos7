@@ -16,7 +16,7 @@ cert-manager-webhook-54754dcdfd-ncdw6      1/1     Running   0          24h
 Note: on my cluster, this took a long time.  I thought the apply was being ignored.  But eventually it worked.  Maybe I need more resources for my cluster?!
 
 # Verify setup, create temporary certificate
-As recommended in the [cert-mangager setup guide](https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation), I created a temporary certificate.  In part, to verify that my setup was good.
+As recommended in the [cert-mangager setup guide](https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation), I created a temporary self-signed certificate, to verify that my setup was good.
 ```
 [jkozik@dell2 k8sNw.com]$ cat <<EOF > test-resources.yaml
 > apiVersion: v1
@@ -51,3 +51,8 @@ issuer.cert-manager.io/test-selfsigned created
 certificate.cert-manager.io/selfsigned-cert created
 
 ```
+# References
+-https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation
+-https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes
+-https://www.thinktecture.com/en/kubernetes/ssl-certificates-with-cert-manager-in-kubernetes/
+
