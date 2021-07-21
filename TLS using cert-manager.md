@@ -52,7 +52,7 @@ certificate.cert-manager.io/selfsigned-cert created
 
 ```
 # References
--https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation
--https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes
--https://www.thinktecture.com/en/kubernetes/ssl-certificates-with-cert-manager-in-kubernetes/
+- https://cert-manager.io/docs/installation/kubernetes/#verifying-the-installation
+- https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes
+- https://www.thinktecture.com/en/kubernetes/ssl-certificates-with-cert-manager-in-kubernetes/
 
