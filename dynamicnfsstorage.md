@@ -9,7 +9,7 @@ On my host, I already had an NFS server setup, I just added an additional line a
 ...
 /home/nfs/kubedata 192.168.100.0/24(rw,sync,no_root_squash,no_all_squash,no_subtree_check,insecure)
 ```
-Note:  in the helm install command below, the nfs.server and nfs.path come strait from the nfs configuration file /etc/exports
+Note:  in the helm install command below, the nfs.server and nfs.path come straight from the nfs configuration file /etc/exports
 ```
 [jkozik@dell2 nfs-provisioner]$ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 "nfs-subdir-external-provisioner" has been added to your repositories
@@ -31,6 +31,20 @@ Also note, the application creates a new storage class called nfs-client.  For a
 [jkozik@dell2 nfs-provisioner]$ kubectl get storageclass
 NAME         PROVISIONER                                     RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 nfs-client   cluster.local/nfs-subdir-external-provisioner   Delete          Immediate           true                   2m46s
+```
+Here's an example pvc.yaml file
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nfs-pv1
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi
 ```
 
 # References
