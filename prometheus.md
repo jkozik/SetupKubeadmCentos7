@@ -101,6 +101,14 @@ statefulset.apps/alertmanager-prometheus-kube-prometheus-alertmanager   1/1     
 statefulset.apps/prometheus-prometheus-kube-prometheus-prometheus       1/1     19m
 ```
 
+## Verify 
+Note that the prometheus-kube-prometheus-prometheus service is of type NodePort. That means one can access the service from the local LAN using the NodePort address listed above.
+
+In this case: http://192.168.100.172:30245   The 172 IP address is the one for the controller node for my cluster. Once at the Prometheus web page, click on Graph.   Then click on the circle button just to the left of the execute button.  Scroll down to the paramenter called node_load15.  Select it, then press the Execute button. The results will show as both a table and a graph.  Select the graph tab.
+
+
+
+
 # References
 - https://www.youtube.com/watch?v=CmPdyvgmw-A&t=937s
 - https://www.google.com/search?q=prometheus+for+kubernetes+install&rlz=1C1GCEU_enUS883US883&oq=prometheus+for+kubernetes+install&aqs=chrome..69i57.7222j0j7&sourceid=chrome&ie=UTF-8
