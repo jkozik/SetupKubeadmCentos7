@@ -106,7 +106,70 @@ Note that the prometheus-kube-prometheus-prometheus service is of type NodePort.
 
 In this case: http://192.168.100.172:30245   The 172 IP address is the one for the controller node for my cluster. Once at the Prometheus web page, click on Graph.   Then click on the circle button just to the left of the execute button.  Scroll down to the paramenter called node_load15.  Select it, then press the Execute button. The results will show as both a table and a graph.  Select the graph tab.
 
+# Setup Grafana
+The references bundle Grafana with Prometheus.  Here's what I did to install it.
 
+First get the values file from the helm chart repository:
+```
+[jkozik@dell2 ~]$ helm inspect values bitnami/grafana > granfana.values
+
+[jkozik@dell2 ~]$ vi grafana.values
+... inside the file, I edited a couple of lines
+  storageClass: "nfs-client"
+    password: "pickapassword"
+```
+Then I installed the helm chart into a grafana namespace:
+```
+[jkozik@dell2 ~]$ kubectl create namespace grafana
+[jkozik@dell2 ~]$ helm install  grafana bitnami/grafana --values grafana.values --namespace grafana
+NAME: grafana
+LAST DEPLOYED: Thu Aug 26 15:36:52 2021
+NAMESPACE: grafana
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+** Please be patient while the chart is being deployed **
+
+1. Get the application URL by running these commands:
+    export NODE_PORT=$(kubectl get --namespace grafana -o jsonpath="{.spec.ports[0].nodePort}" services grafana)
+    export NODE_IP=$(kubectl get nodes --namespace grafana -o jsonpath="{.items[0].status.addresses[0].address}")
+    echo http://$NODE_IP:$NODE_PORT
+
+2. Get the admin credentials:
+
+    echo "User: admin"
+    echo "Password: $(kubectl get secret grafana-admin --namespace grafana -o jsonpath="{.data.GF_SECURITY_ADMIN_PASSWORD}" | base64 --decode)"
+```
+## Verify Grafana is running
+Then I quickly verified that everything was running. 
+```
+[jkozik@dell2 ~]$ kubectl get all,pv,pvc  --namespace grafana
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/grafana-6d788dcb84-25plm   0/1     Running   0          71s
+
+NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/grafana   NodePort   10.109.117.30   <none>        3000:32174/TCP   71s
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/grafana   0/1     1            0           71s
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/grafana-6d788dcb84   1         1         0       71s
+
+NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                  STORAGECLASS   REASON   AGE
+persistentvolume/chwcom-persistent-storage                  1Gi        ROX            Retain           Bound    default/chwcom-persistent-storage      nfs                     44d
+persistentvolume/mysql-persistent-storage                   1Gi        RWX            Retain           Bound    default/mysql-persistent-storage                               63d
+persistentvolume/nfs-pv                                     1Gi        RWX            Retain           Bound    default/nfs-pvc                        nfs                     65d
+persistentvolume/nginx-persistent-storage                   1Gi        RWX            Retain           Bound    default/nginx-persistent-storage                               63d
+persistentvolume/nwcom-persistent-storage                   1Gi        ROX            Retain           Bound    default/nwcom-persistent-storage       nfs                     40d
+persistentvolume/pvc-a13d1699-0a2f-422d-bdcf-c63246bb2ee4   10Gi       RWO            Delete           Bound    grafana/grafana                        nfs-client              71s
+persistentvolume/wordpress-persistent-storage               1Gi        RWX            Retain           Bound    default/wordpress-persistent-storage                           63d
+
+NAME                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/grafana   Bound    pvc-a13d1699-0a2f-422d-bdcf-c63246bb2ee4   10Gi       RWO            nfs-client     71s
+```
+The Grafana portal is reachable from http://192.168.100.172:32174. 
 
 
 # References
