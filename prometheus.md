@@ -171,7 +171,7 @@ persistentvolumeclaim/grafana   Bound    pvc-a13d1699-0a2f-422d-bdcf-c63246bb2ee
 ```
 The Grafana portal is reachable from http://192.168.100.172:32174. 
 
-## Setup Grafana
+## Configure Grafana
 
 Login with the default user id and password (you can set those in the grafana.values file, above).  It will prompt you to change your password. 
 
