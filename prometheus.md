@@ -171,6 +171,125 @@ persistentvolumeclaim/grafana   Bound    pvc-a13d1699-0a2f-422d-bdcf-c63246bb2ee
 ```
 The Grafana portal is reachable from http://192.168.100.172:32174. 
 
+## Setup Grafana
+
+Login with the default user id and password (you can set those in the grafana.values file, above).  It will prompt you to change your password. 
+
+Once in Grafana, create a linkage to prometheus: Find the settings icon and select Data Sources.  Click on add data source, find Prometheus and click on select.  In the http field type the URL to the Prometheus server, select browser and click on Save and Test.  This should work.  For me, I got errors; using the browser debugger window I discovered that I got CORS security errors.  I needed to use nginx to fix this.  If this happens see my next section on Ingress Setup.  
+
+With a Data Source, create a simple data board to verify operations.  Click on the + sign, create dashboard. Click Add panel, add empty panel. Find the Metrics browser > line and enter "Node_load15", click on the link that pops up.  After a short while, an aggregate chart of the performance of all the nodes in the cluster will display on the graph above.  Title the panel "Node_load15" apply and then title the Dashboard as "Node_load15" and save it. 
+
+So this basically works, but it is boring.  The Grafana value comes from the library of dashboards supplied by the community.  Look for the article titled [10 Most Useful Grafana Dashboards to Monitor Kubernetes and Services](https://blog.lwolf.org/post/going-open-source-in-monitoring-part-iii-10-most-useful-grafana-dashboards-to-monitor-kubernetes-and-services/). For example pick dashboard 1621.  
+
+From the home screen, click on + Import. In the field "Import via grafana.com" enter 1621; press Load. In the next dialog box select a Prometheus Data source. And click on Import. Wait awhile, some of the panels will take longer than others.  From here it is a matter of personal taste.  
+
+# Setup Ingress
+
+Both Prometheus and Grafana are exposed as NodePort services.  To connect them to real URLs, create Ingress rules.  I already setup an Ingress Controller for my applications See [kubernetes Ingress Controller setup and testing](https://github.com/jkozik/k8sIngressTest).  The ingress rules will take advantage of it. The following manifests mapped the services to http://prometheusk8s.kozik.net and http://grafanak8s.kozik.net.   
+## Create manifest
+```
+cat <<EOF >>nginx-wordpress-ingress.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  namespace: prometheus
+spec:
+  rules:
+  - host: prometheusk8s.kozik.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-kube-prometheus-prometheus
+            port:
+              number: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  namespace: grafana
+spec:
+  rules:
+  - host: grafanak8s.kozik.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000       
+EOF 
+## Apply ingress manifest for prometheus and grafana
+[jkozik@dell2 ~]$ kubectl apply -f prometheus-grafana-ingress.yaml
+ingress.networking.k8s.io/prometheus unchanged
+ingress.networking.k8s.io/grafana created
+
+## Verify
+
+[jkozik@dell2 ~]$ kubectl get all,ing -n grafana
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/grafana-6d788dcb84-25plm   1/1     Running   0          21h
+
+NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/grafana   NodePort   10.109.117.30   <none>        3000:32174/TCP   21h
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/grafana   1/1     1            1           21h
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/grafana-6d788dcb84   1         1         1       21h
+
+NAME                                CLASS    HOSTS                  ADDRESS           PORTS   AGE
+ingress.networking.k8s.io/grafana   <none>   grafanak8s.kozik.net   192.168.100.174   80      50s
+
+[jkozik@dell2 ~]$ kubectl get all,ing -n prometheus
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          2d
+pod/prometheus-kube-prometheus-operator-7f45dd6d9b-mfr9x     1/1     Running   0          2d
+pod/prometheus-kube-state-metrics-86b9d86ccd-kjqw4           1/1     Running   0          2d
+pod/prometheus-node-exporter-9zs4t                           1/1     Running   0          2d
+pod/prometheus-node-exporter-lk728                           1/1     Running   0          2d
+pod/prometheus-node-exporter-vkzrm                           1/1     Running   0          2d
+pod/prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          2d
+
+NAME                                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+service/alertmanager-operated                     ClusterIP   None             <none>        9093/TCP,9094/TCP,9094/UDP   2d
+service/prometheus-kube-prometheus-alertmanager   ClusterIP   10.104.114.17    <none>        9093/TCP                     2d
+service/prometheus-kube-prometheus-operator       ClusterIP   10.111.155.45    <none>        8080/TCP                     2d
+service/prometheus-kube-prometheus-prometheus     NodePort    10.100.242.165   <none>        9090:30245/TCP               2d
+service/prometheus-kube-state-metrics             ClusterIP   10.103.177.255   <none>        8080/TCP                     2d
+service/prometheus-node-exporter                  ClusterIP   10.97.199.99     <none>        9100/TCP                     2d
+service/prometheus-operated                       ClusterIP   None             <none>        9090/TCP                     2d
+
+NAME                                      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/prometheus-node-exporter   3         3         3       3            3           <none>          2d
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/prometheus-kube-prometheus-operator   1/1     1            1           2d
+deployment.apps/prometheus-kube-state-metrics         1/1     1            1           2d
+
+NAME                                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/prometheus-kube-prometheus-operator-7f45dd6d9b   1         1         1       2d
+replicaset.apps/prometheus-kube-state-metrics-86b9d86ccd         1         1         1       2d
+
+NAME                                                                    READY   AGE
+statefulset.apps/alertmanager-prometheus-kube-prometheus-alertmanager   1/1     2d
+statefulset.apps/prometheus-prometheus-kube-prometheus-prometheus       1/1     2d
+
+NAME                                   CLASS    HOSTS           ADDRESS           PORTS   AGE
+ingress.networking.k8s.io/prometheus   <none>   k8s.kozik.net   192.168.100.174   80      19s
+```
+
 
 # References
 - https://www.youtube.com/watch?v=CmPdyvgmw-A&t=937s
