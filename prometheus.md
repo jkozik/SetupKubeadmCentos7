@@ -229,12 +229,16 @@ spec:
             port:
               number: 3000       
 EOF 
+```
 ## Apply ingress manifest for prometheus and grafana
+```
 [jkozik@dell2 ~]$ kubectl apply -f prometheus-grafana-ingress.yaml
 ingress.networking.k8s.io/prometheus unchanged
 ingress.networking.k8s.io/grafana created
 
+```
 ## Verify
+```
 
 [jkozik@dell2 ~]$ kubectl get all,ing -n grafana
 NAME                           READY   STATUS    RESTARTS   AGE
