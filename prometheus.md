@@ -323,7 +323,7 @@ root@scwcom-5f647c54cc-b5hfq:/var/www/html# curl http://127.0.0.1/server-status
 <dt>Server uptime:  1 day 55 minutes 20 seconds</dt>
 <dt>Server load: 0.11 0.17 0.20</dt>
 ```
-I found the [official documentation for the Apache Exporter in github](https://github.com/Lusitaniae/apache_exporter).  A build was posted in docker hub as [lusotycoon/apache-exporter](https://hub.docker.com/r/lusotycoon/apache-exporter/).  Then following the example from Cloud Academy, I added a second container to my scwcom pod using this image.  See example scwcom.deployment.yaml page:
+I found the [official documentation for the Apache Exporter in github](https://github.com/Lusitaniae/apache_exporter).  A build was posted in docker hub as [lusotycoon/apache-exporter](https://hub.docker.com/r/lusotycoon/apache-exporter/).  Then following [the example from Cloud Academy](https://github.com/cloudacademy/Apache-Prometheus-Exporter), I added a second container to my scwcom pod using this image.  See example scwcom.deployment.yaml page:
 ```
 [jkozik@dell2 k8s]$ cat scwcom-deploy.yaml
 apiVersion: apps/v1
