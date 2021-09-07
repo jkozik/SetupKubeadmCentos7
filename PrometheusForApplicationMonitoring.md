@@ -74,9 +74,11 @@ spec:
     matchNames:
       - default
 EOF
+```
 
 ## Deploy example-app
 
+```
 [jkozik@dell2 ~]$ kubectl apply -f prometheus-example-app.yaml
 service/example-app unchanged
 deployment.apps/example-app unchanged
