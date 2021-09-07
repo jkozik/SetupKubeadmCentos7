@@ -1,5 +1,7 @@
-# Setup Prometheus
-As part of seting up the kubernetes cluster, it is useful to setup the promethes monitoring services.  There's lots of blog articles on how to install and setup.  What I found is that the procedure has changed/improved; one needs to look for the most recent procedures.
+# Prometheus for cluster monitoring
+As part of seting up the kubernetes cluster, it is useful to setup the promethes monitoring services.  There's lots of blog articles on how to install and setup.  What I found is that the procedure has changed/improved; one needs to look for the most recent procedures. The procedure below installs prometheus and configures it to monitor kubernetes cluster, including a tool called a node-exporter and takes advantage of the kube-state-metrics... both of these are kubernetes specific, not necessarily part of the base prometheus. 
+
+One distinction to note:  prometheus has been packaged into a kubernetes construct called an operator.  The prometheus operator is a hides the complexity of mapping deployements and services into the prometheus metrics scraping configuration tables.  Instead, one creates ServiceMonitor resources.  Using labels, a ServiceMonitor gets tied to a service from which metrics are retrieved.   
 
 Get the values for the helm chart
 ```
