@@ -137,7 +137,7 @@ Next in the prometheus portal, click on graphes.  In the search bar type demo...
 Finally, query all the parameters from the example application: sum({job="example-app"}) by(__name__).  Using contrl-click you can select multiple metrics and have them graphed together.
 
 
-# Apache Exporter
+# Apache Exporter: Sidecar to SanCapWeather.com (scwcom) application 
 Out of the box, Prometheus and Grafana are wired to monitor the performance of a Kubernetes cluster. But Prometheus is designed for application monitoring.  There's a whole [library of Prometheus exporters](https://prometheus.io/docs/instrumenting/exporters/) that give visibility to the performance of an application. I wanted to test this out, so here's my notes on the Apache Exporter. 
 
 ## Verify that server-status works
