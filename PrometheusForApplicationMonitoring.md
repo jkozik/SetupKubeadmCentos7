@@ -7,7 +7,7 @@ In this note, I will show my steps for taking the previously installed prometheu
 Here's some articles on this subject: 
 - [Kubernetes prometheus operator deployment](https://ervikrant06.github.io/kubernetes/Kuberenetes-prometheus-installation/)
 - [Monitoring Kubernetes with prometheus-operator - Lili Cosic, Red Hat](https://www.youtube.com/watch?v=MuHPMXCGiLc).  I especially refered to it starting at 19:05
-- [Introduction to the Prometheus Operator on Kubernetes](https://www.youtube.com/watch?v=LQpmeb7idt8) which uses [this github repository](https://github.com/marcel-dempers/docker-development-youtube-series/tree/master/monitoring/prometheus/kubernetes/1.14.8/prometheus-standalone) .
+- [Introduction to the Prometheus Operator on Kubernetes](https://www.youtube.com/watch?v=LQpmeb7idt8) which uses [this github repository](https://github.com/marcel-dempers/docker-development-youtube-series/tree/master/monitoring/prometheus/kubernetes/1.14.8/prometheus-standalone) .  The prometheus stand-alone discussion starts at 10:30. 
 
 ## Example test application
 To start, I want to setup a very simple application and verify that prometheus can discover it.  
@@ -80,6 +80,11 @@ spec:
       - default
 EOF
 ```
+Some notes about the above resources:  look at the deployment, 'name: example-app', it has the label 'app: example-app'. It is exposed via the service 'name: example-app' which has a selector 'app: example-app' and has a label 'tier: frontend'.  The service exposes all deployments with a label of 'app: exmaple-app'.
+
+The ServiceMonitor named "name: frontend", it has a selector: 'matchLabels: tieir: frontend'. It tells prometheus to scrape all resources attached to a service that matches the label 'tier: frontend'.  
+
+This linkage is very generalizable.  Among other things, it envisions deployments to be designed to bundle together a ServiceMonitor resource along with the other typical resources that make up an application in kubernetes:  deployements, services, ingress, pv, pvc, ... and servicemonitor.
 
 ## Deploy example-app
 
