@@ -9,6 +9,7 @@ Here's some articles on this subject:
 - [Monitoring Kubernetes with prometheus-operator - Lili Cosic, Red Hat](https://www.youtube.com/watch?v=MuHPMXCGiLc).  I especially refered to it starting at 19:05
 - [Introduction to the Prometheus Operator on Kubernetes](https://www.youtube.com/watch?v=LQpmeb7idt8) which uses [this github repository](https://github.com/marcel-dempers/docker-development-youtube-series/tree/master/monitoring/prometheus/kubernetes/1.14.8/prometheus-standalone) .  The prometheus stand-alone discussion starts at 10:30. 
 - [Kubernetes Cluster Monitoring for beginners](https://www.youtube.com/watch?v=TrGgvkJfslw)
+- [Simple Management of Prometheus Monitoring Pipeline with the Prometheus Operator](https://medium.com/kubernetes-tutorials/simple-management-of-prometheus-monitoring-pipeline-with-the-prometheus-operator-b445da0e0d1a)
 
 ## Example test application
 To start, I want to setup a very simple application and verify that prometheus can discover it.  
