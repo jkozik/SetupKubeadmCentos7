@@ -2,7 +2,11 @@
 
 Earlier, I installed a prometheus-operator for monitoring the kubernetes cluster.  [See my notes.](https://github.com/jkozik/SetupKubeadmCentos7/blob/main/prometheus.md). The helm chart installed a big stack including the ServiceMonitors required to monitor the kubernetes cluster.  
 
-In this note, I will show my steps for taking the previously installed prometheus operator and configure it to monitor my deployments.  The initial case are the various weather websites that I run including SanCapWeather.com.  This is basically an apache web site.  Prometheus has apache exporters designed to work with applications like this. Here's an example article on this subject: [Kubernetes prometheus operator deployment](https://ervikrant06.github.io/kubernetes/Kuberenetes-prometheus-installation/)
+In this note, I will show my steps for taking the previously installed prometheus operator and configure it to monitor my deployments.  The initial case are the various weather websites that I run including SanCapWeather.com.  This is basically an apache web site.  Prometheus has apache exporters designed to work with applications like this. 
+
+Here's some articles on this subject: 
+-[Kubernetes prometheus operator deployment](https://ervikrant06.github.io/kubernetes/Kuberenetes-prometheus-installation/)
+-[Monitoring Kubernetes with prometheus-operator - Lili Cosic, Red Hat](https://www.youtube.com/watch?v=MuHPMXCGiLc).  I especially refered to it starting at 19:05
 
 ## Example test application
 To start, I want to setup a very simple application and verify that prometheus can discover it.  
